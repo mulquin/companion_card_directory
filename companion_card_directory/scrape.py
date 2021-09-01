@@ -30,6 +30,7 @@ def act_get_next_sibling_href(soup, paragraphs, strong_text):
     return ''
 
 def act():
+    print('act')
     scrape_dir = helpers.get_scrape_dir('act')
     remote_index = 'https://www.communityservices.act.gov.au/companion_card/affiliates/'
 
@@ -81,8 +82,8 @@ def act():
 
     helpers.write_json_file('act.json', data)
 
-
 def nt():
+    print('nt')
     scrape_dir = helpers.get_scrape_dir('nt')
     remote_url = 'https://nt.gov.au/wellbeing/disability-services/nt-companion-card/where-you-can-use-your-card'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
@@ -123,3 +124,21 @@ def nt():
             data.append(entry)
 
     helpers.write_json_file('nt.json', data)
+
+def nsw():
+    print('nsw')
+
+def qld():
+    print('qld')
+
+def vic():
+    print ('vic')
+
+def wa():
+    print ('wa')
+
+def sa():
+    print ('sa')
+
+def tas():
+    print ('tas')
