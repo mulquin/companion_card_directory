@@ -136,6 +136,94 @@ def vic():
 
 def wa():
     print ('wa')
+    scrape_dir = helpers.get_scrape_dir('wa')
+    remote_url = 'https://www.wacompanioncard.org.au/where-can-i-use-my-card'
+
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+
+    data = []
+
+    affiliate_links = []
+
+    soup = BeautifulSoup(html, 'html.parser')
+
+    link_list = soup.select('#itemListLinks a')
+
+    for link in link_list:
+        built_link = 'https://www.wacompanioncard.org.au' + link['href']
+        affiliate_links.append(built_link)
+
+    while True:
+        go_next = ''
+        next_link = soup.select('li a.next')
+
+        if (next_link == None):
+            break
+
+        if (len(next_link) == 0):
+            break
+        
+        go_next = 'https://www.wacompanioncard.org.au' + next_link[0]['href']
+
+        html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+
+        soup = BeautifulSoup(html, 'html.parser')
+
+        link_list = soup.select('#itemListLinks a')
+
+        for link in link_list:
+            built_link = 'https://www.wacompanioncard.org.au' + link['href']
+            affiliate_links.append(built_link)
+
+    for link in affiliate_links:
+        html = helpers.get_content_from_cache_or_remote(link, scrape_dir)
+        soup = BeautifulSoup(html, 'html.parser')
+
+        name = soup.select('h2.itemTitle')[0].get_text().strip()
+ 
+        fields = soup.select('div.itemExtraFields li')
+
+        for field in fields:
+            field_name = field.find_all('span')[0].get_text().strip()
+
+            if (field_name == 'Type/Category:'):
+                category = field.find_all('span')[1].get_text()
+            elif (field_name == 'Street Address:'):
+                street = field.find_all('span')[1].get_text()
+            elif (field_name == 'Suburb:'):
+                suburb = field.find_all('span')[1].get_text()
+            elif (field_name == 'State:'):
+                state = field.find_all('span')[1].get_text()
+            elif (field_name == 'Postcode:'):
+                postcode = field.find_all('span')[1].get_text()
+            elif (field_name == 'Phone Number:'):
+                phone = field.find_all('span')[1].get_text()
+                if (phone == '.'):
+                    phone = ''
+            elif (field_name == 'Website:'):
+                website = ''
+                if (field.find('a') != None):
+                    website = field.find('a')['href']
+            else:
+                print('wtf field: ' + field_name)
+
+        address = street + ", " + suburb + ", " + state + ", " + postcode
+
+        description = soup.select('div.itemFullText')[0].get_text().strip()
+
+        entry = {
+            'category': category,
+            'name': name,
+            'address': address,
+            'phone': phone,
+            'website': website,
+            'description': description
+        }
+
+        data.append(entry)
+    
+    helpers.write_json_file('wa.json', data)
+    
 
 def sa():
     print ('sa')
