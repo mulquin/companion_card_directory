@@ -21,25 +21,30 @@ def make_scrape_dir(state):
         os.makedirs(scrape_dir, exist_ok=True)
 
 
-def get_content_from_cache_or_remote(remote_path, local_dir, ttl = 86400):
+def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
     page_name = remote_path.rsplit('/', 1)[-1]
+    page_name = "".join([c for c in page_name if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
     if (page_name == ''):
         local_file = local_dir + '_index.html' # Increment if seen before
+    elif (is_index == True):
+        local_file = local_dir + '_'+page_name + '.html'
     else:
         local_file = local_dir + page_name + '.html' #Add support for files that already end in .html
+    
 
     should_dl = False
 
     if (os.path.isfile(local_file) == True):
         file_stat = os.stat(local_file)
         file_age = (time.time() - file_stat.st_mtime)
-        if (file_age > ttl):
+        if (file_age > 86400):
             should_dl = True
     else:
         should_dl = True
 
     if (should_dl == True):
-        print('Downloading from ' + remote_path)
+        print('Downloading: ' + remote_path)
         request = requests.get(remote_path)
 
         with open(local_file, 'wb') as file:
@@ -47,4 +52,5 @@ def get_content_from_cache_or_remote(remote_path, local_dir, ttl = 86400):
 
         return request.content
     else:
+        print('Cached: ' + local_file)
         return open(local_file, 'r').read()
