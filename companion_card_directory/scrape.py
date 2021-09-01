@@ -19,7 +19,7 @@ def act():
 def nt():
     scrape_dir = helpers.get_scrape_dir('nt')
     remote_url = 'https://nt.gov.au/wellbeing/disability-services/nt-companion-card/where-you-can-use-your-card'
-    html = helpers.get_content_from_cache_or_remote(remote_url, helpers.get_scrape_dir(scrape_dir))
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
     data = []
 
