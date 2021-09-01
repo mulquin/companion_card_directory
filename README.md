@@ -1,6 +1,6 @@
 # Companion Card Directory
 
-This project has two main aims:
+This project has two main objectives:
 
 1. To unify the list of affiliates from the various state and territory Companion Card programs
 2. To help me learn Python
@@ -8,7 +8,8 @@ This project has two main aims:
 ## Dependencies
 
 * Python3
-* requests library
+* requests library for downloading
+* BeautifulSoup for html parsing
 
 
 Data is scraped from each state and territories list of affiliates
