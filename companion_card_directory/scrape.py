@@ -127,6 +127,88 @@ def nt():
 
 def nsw():
     print('nsw')
+    scrape_dir = helpers.get_scrape_dir('nsw')
+    remote_url = 'https://www.companioncard.nsw.gov.au/cardholders/where-can-i-use-my-card'
+
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+
+    data = []
+
+    affiliate_links = []
+
+    soup = BeautifulSoup(html, 'html.parser')
+
+    link_list = soup.select('ul#ul-646007 span.bold a')
+
+    for link in link_list:
+        affiliate_links.append(link['href'])
+
+    while True:
+        go_next = ''
+        next_link = soup.select('div.inline-block.width-20.mobile-width-50.no-mobile.align-right a')
+
+        if (next_link == None):
+            break
+
+        if (len(next_link) == 0):
+            break
+        
+        go_next = next_link[0]['href']
+
+        html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+
+        soup = BeautifulSoup(html, 'html.parser')
+
+        link_list = soup.select('ul#ul-646007 span.bold a')
+
+        for link in link_list:
+            affiliate_links.append(link['href'])
+
+    for link in affiliate_links:
+        html = helpers.get_content_from_cache_or_remote(link, scrape_dir)
+        soup = BeautifulSoup(html, 'html.parser')
+
+        paragraphs = soup.select('#readable-content p')
+        
+        name = soup.find('h1').get_text();
+        category = ''
+        address = ''
+        phone = ''
+        website = ''
+        description = ''
+
+        description = paragraphs[0].get_text()
+        for paragraph in paragraphs:
+            strong = paragraph.find('strong')
+            if (hasattr(strong, 'get_text')):
+                field = strong.get_text()
+                if (field == "Business type"):
+                    category = strong.next_sibling.next_sibling
+                    if (category == None):
+                        category = soup.select('div.breadcrumbs li:last-of-type a')[0].get_text()
+                        print("\tUsing breadcrumb for category")
+                elif (field == "Phone number"):
+                    phone = strong.next_sibling.next_sibling
+                elif (field == "Address"):
+                    address = strong.next_sibling.next_sibling.get_text().strip()
+                elif (field == "Website"):
+                    website = strong.next_sibling.next_sibling['href']
+                else:
+                    print ('Unknown field: "' + field + '"')
+       
+        entry = {
+            'category': category,
+            'name': name,
+            'address': address,
+            'phone': phone,
+            'website': website,
+            'description': description
+        }
+
+        data.append(entry)
+
+    helpers.write_json_file('nsw.json', data)
+    
 
 def qld():
     print('qld')
