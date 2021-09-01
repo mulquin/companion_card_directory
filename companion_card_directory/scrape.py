@@ -142,3 +142,32 @@ def sa():
 
 def tas():
     print ('tas')
+    scrape_dir = helpers.get_scrape_dir('tas')
+    remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/tasmanian_businesses_that_accept_the_companion_card'
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+
+    soup = BeautifulSoup(html, 'html.parser')
+
+    paragraphs = soup.select('#main-content p:nth-child(n+7)')
+
+    data = []
+
+    for paragraph in paragraphs:
+        strong = paragraph.find('strong')
+        name = strong.get_text()
+        
+        website = ''
+
+        link = strong.find('a')
+        if (link != None):
+            website = link['href']
+
+
+        entry = {
+            'name': name,
+            'website': website
+        }
+
+        data.append(entry)
+
+    helpers.write_json_file('tas.json', data)
