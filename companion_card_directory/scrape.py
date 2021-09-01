@@ -212,6 +212,88 @@ def nsw():
 
 def qld():
     print('qld')
+    scrape_dir = helpers.get_scrape_dir('qld')
+    remote_url = 'https://secure.communities.qld.gov.au/chiip/SearchBrowseCompanion.aspx'
+
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+
+    data = []
+
+    category_links = []
+
+    soup = BeautifulSoup(html, 'html.parser')
+
+    category_links_pages = soup.select('#content ol a')
+
+    for category_links_page in category_links_pages:
+        category_links.append("https://secure.communities.qld.gov.au/chiip/" + category_links_page['href'])
+
+    for category_link in category_links:
+        html = helpers.get_content_from_cache_or_remote(category_link, scrape_dir, True)
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        affiliates = soup.select('#custombody li')
+        
+        for affiliate in affiliates:
+            name = affiliate.select('span[id$=VenueName]')[0].get_text()
+            category = affiliate.select('span[id$=BusCat]')[0].get_text()
+            street = affiliate.select('span[id$=Addr1]')[0].get_text()
+            suburb = affiliate.select('span[id$=Suburb]')[0].get_text()
+            address = street + ", " + suburb
+            phone = affiliate.select('span[id$=ContactPh]')[0].get_text()
+            website = affiliate.find('a')['href']
+
+            entry = {
+                'category': category,
+                'name': name,
+                'address': address,
+                'phone': phone,
+                'website': website
+            }
+            
+            data.append(entry)
+
+        while True:
+            go_next = ''
+            next_link = soup.select('#custombody p:last-of-type a:nth-last-of-type(2)')
+
+            if (len(next_link) == 0):
+                break
+
+            if (next_link[0].get_text() != '>'):
+                break
+
+            go_next = "https://secure.communities.qld.gov.au" + next_link[0]['href']
+
+            html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+
+            soup = BeautifulSoup(html, 'html.parser')
+
+            affiliates = soup.select('#custombody li')
+        
+            for affiliate in affiliates:
+                name = affiliate.select('span[id$=VenueName]')[0].get_text()
+                category = affiliate.select('span[id$=BusCat]')[0].get_text()
+                street = affiliate.select('span[id$=Addr1]')[0].get_text()
+                suburb = affiliate.select('span[id$=Suburb]')[0].get_text()
+                address = street + ", " + suburb
+                phone = affiliate.select('span[id$=ContactPh]')[0].get_text()
+                website = affiliate.find('a')['href']
+
+                entry = {
+                    'category': category,
+                    'name': name,
+                    'address': address,
+                    'phone': phone,
+                    'website': website
+                }
+                
+                data.append(entry)
+
+    helpers.write_json_file('qld.json', data)
+
+
+
 
 def vic():
     print ('vic')
