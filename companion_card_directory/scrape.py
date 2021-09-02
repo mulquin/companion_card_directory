@@ -458,3 +458,43 @@ def vic():
 
 def sa():
     print ('sa')
+    scrape_dir = helpers.get_scrape_dir('sa')
+    remote_url = 'https://www.sa.gov.au/__data/assets/pdf_file/0009/684828/I051-Companion-Card-Affiliate-List-07_2021.pdf'
+    file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+
+    pdf = pdfplumber.open(file)
+
+    data = []
+
+    pages = pdf.pages
+
+    for i,pg in enumerate(pages):
+        if (i == 0 or i == 1):
+            continue
+        text = pages[i].extract_text()
+        text = text.replace("APC I051 | July 2021", "")
+        text = text.replace("We would like to acknowledge the generous support of the \nfollowing venues and events that have agreed to accept the \nCompanion Card.","")
+        lines = text.split("\n")
+        
+        lines = [l.strip() for l in lines]
+        lines = [l for l in lines if l]
+
+        del lines[0]
+        lines.pop()
+
+        current_dot = 0
+        last_dot = 0
+
+        for j, line in enumerate(lines):
+            if (len(line) == 1):
+                del lines[j]
+
+            lines[j] = lines[j].replace('•', '').strip()
+
+            entry = {
+                'name': lines[j]
+            }
+
+            data.append(entry)
+
+    helpers.write_json_file('sa.json', data)
