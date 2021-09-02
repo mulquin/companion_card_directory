@@ -10,18 +10,22 @@ This project has two main objectives:
 * Python3
 * requests library for downloading
 * BeautifulSoup for html parsing
+* pdfplumber for PDF reader
+* python-magic for mime type checking
 
 
 Data is scraped from each state and territories list of affiliates
 
-* NSW: https://www.companioncard.nsw.gov.au/cardholders/where-can-i-use-my-card
-* Victoria: https://www.companioncard.vic.gov.au/where-can-i-use-my-card
-* Queensland: https://secure.communities.qld.gov.au/chiip/SearchCompanionResults.aspx?action=srch&pageNum=10
-* Western Australia: https://www.wacompanioncard.org.au/where-can-i-use-my-card
-* South Australia: https://www.sa.gov.au/__data/assets/pdf_file/0009/684828/I051-Companion-Card-Affiliate-List-07_2021.pdf
-* Tasmania: https://www.companioncard.communities.tas.gov.au/affiliates/tasmanian_businesses_that_accept_the_companion_card
 * Northern Territory: https://nt.gov.au/wellbeing/disability-services/nt-companion-card/where-you-can-use-your-card
 * ACT: https://www.communityservices.act.gov.au/companion_card/affiliates
+* Tasmania: https://www.companioncard.communities.tas.gov.au/affiliates/tasmanian_businesses_that_accept_the_companion_card
+* Western Australia: https://www.wacompanioncard.org.au/where-can-i-use-my-card
+* NSW: https://www.companioncard.nsw.gov.au/cardholders/where-can-i-use-my-card
+* Queensland: https://secure.communities.qld.gov.au/chiip/SearchBrowseCompanion.aspx
+
+* South Australia: https://www.sa.gov.au/__data/assets/pdf_file/0009/684828/I051-Companion-Card-Affiliate-List-07_2021.pdf
+* Victoria: https://www.companioncard.vic.gov.au/where-can-i-use-my-card
+
 
 The data is normalized into the following fields
 
