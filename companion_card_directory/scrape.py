@@ -1,5 +1,6 @@
 import helpers
 from bs4 import BeautifulSoup
+import pdfplumber
 
 def act_get_next_sibling_text(soup, paragraphs, strong_text):
     for paragraph in paragraphs:
@@ -289,14 +290,8 @@ def qld():
                 }
                 
                 data.append(entry)
-
+                
     helpers.write_json_file('qld.json', data)
-
-
-
-
-def vic():
-    print ('vic')
 
 def wa():
     print ('wa')
@@ -388,10 +383,6 @@ def wa():
     
     helpers.write_json_file('wa.json', data)
     
-
-def sa():
-    print ('sa')
-
 def tas():
     print ('tas')
     scrape_dir = helpers.get_scrape_dir('tas')
@@ -423,3 +414,47 @@ def tas():
         data.append(entry)
 
     helpers.write_json_file('tas.json', data)
+
+
+def vic():
+    print ('vic')
+    scrape_dir = helpers.get_scrape_dir('vic')
+    remote_url = 'https://www.companioncard.vic.gov.au/sites/default/files/documents/202101/Companion%20Card%20Affiliates%20List_postcode.pdf'
+    file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+
+    pdf = pdfplumber.open(file)
+    data = []
+
+    for page in pdf.pages:
+        table = page.extract_table()
+        if (table == None):
+            continue
+
+        for rows in table:
+            name = rows[0]
+            if (name == 'Business Name'):
+                continue
+
+            address = '';
+            if (rows[1] != None):
+                address += rows[1]
+            if (rows[2] != None):
+                address += ", " + rows[2]
+            if (rows[3] != None):
+                address += ", " + rows[3]
+
+            description = ''
+            if (rows[4] != None):
+                description = rows[4].replace("\n", " ")
+                 
+            entry = {
+                'name': rows[0],
+                'address': address,
+                'description': description.replace("\n", " ")
+            }
+            data.append(entry)
+    
+    helpers.write_json_file('vic.json', data)
+
+def sa():
+    print ('sa')

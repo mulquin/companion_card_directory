@@ -2,6 +2,7 @@ import os
 import time
 import requests
 import json
+import magic
 
 def write_json_file(filename, data):
     json_file = get_data_dir() + filename
@@ -32,7 +33,6 @@ def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
     else:
         local_file = local_dir + page_name + '.html' #Add support for files that already end in .html
     
-
     should_dl = False
 
     if (os.path.isfile(local_file) == True):
@@ -53,4 +53,9 @@ def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
         return request.content
     else:
         print('Cached: ' + local_file)
-        return open(local_file, 'r').read()
+        mime = magic.Magic(mime=True)
+        mimetype = mime.from_file(local_file)
+        if (mimetype == 'application/pdf'):
+            return open(local_file, 'rb')
+        else:
+            return open(local_file, 'r').read()
