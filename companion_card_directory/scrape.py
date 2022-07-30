@@ -385,22 +385,21 @@ def wa():
 def tas():
     print ('tas')
     scrape_dir = helpers.get_scrape_dir('tas')
-    remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/tasmanian_businesses_that_accept_the_companion_card'
+    remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/directory/search?queries_region_query_posted=1&queries_region_query[0]=nw&queries_region_query[1]=nor&queries_region_query[2]=south&queries_region_query[3]=sw&queries_region_query[4]=nat'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
     soup = BeautifulSoup(html, 'html.parser')
 
-    paragraphs = soup.select('#main-content p:nth-child(n+7)')
+    li = soup.select('#main-content ul li')
 
     data = []
 
-    for paragraph in paragraphs:
-        strong = paragraph.find('strong')
-        name = strong.get_text()
-        
+    for item in li:
+        name = item.get_text()
+
         website = ''
 
-        link = strong.find('a')
+        link = item.find('a')
         if (link != None):
             website = link['href']
 
