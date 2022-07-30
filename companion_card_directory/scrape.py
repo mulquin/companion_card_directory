@@ -456,8 +456,16 @@ def vic():
 def sa():
     print ('sa')
     scrape_dir = helpers.get_scrape_dir('sa')
-    remote_url = 'https://www.sa.gov.au/__data/assets/pdf_file/0009/684828/I051-Companion-Card-Affiliate-List-07_2021.pdf'
-    file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+    remote_url = 'https://www.sa.gov.au/topics/care-and-support/disability/companion-card/using-your-companion-card'
+    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+
+    soup = BeautifulSoup(html, 'html.parser')
+
+    link = soup.select('a[title="SA Companion Card Affiliate List"]')
+
+    pdf_url = link[0].get('href')
+    
+    file = helpers.get_content_from_cache_or_remote(pdf_url, scrape_dir)
 
     pdf = pdfplumber.open(file)
 
