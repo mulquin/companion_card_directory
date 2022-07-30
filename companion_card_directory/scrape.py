@@ -210,7 +210,6 @@ def nsw():
 
     helpers.write_json_file('nsw.json', data)
     
-
 def qld():
     print('qld')
     scrape_dir = helpers.get_scrape_dir('qld')
@@ -414,7 +413,6 @@ def tas():
         data.append(entry)
 
     helpers.write_json_file('tas.json', data)
-
 
 def vic():
     print ('vic')
