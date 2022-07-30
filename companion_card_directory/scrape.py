@@ -1,6 +1,7 @@
 import helpers
 from bs4 import BeautifulSoup
 import pdfplumber
+import json
 
 def act_get_next_sibling_text(soup, paragraphs, strong_text):
     for paragraph in paragraphs:
@@ -83,46 +84,93 @@ def act():
 
     helpers.write_json_file('act.json', data)
 
+def nt_extract_item(item, category):
+    name = item.find('h2').get_text()
+    website = ''
+    button = item.select('.fl-button')
+    if (len(button) > 0):
+        website = item.select('.fl-button')[0]['href']
+    
+    description = ''
+    email = ''
+    phone = ''
+    address = ''
+
+    paragraphs = item.select('p')
+    for p in paragraphs:
+        if p.get_text() != '' and p.find('p') == None:
+            p_text = p.get_text()
+            if "Address:" in p_text:
+                address = p_text.split('Address:')[1].strip()
+            elif "Phone:" in p_text:
+                phone = p_text.split('Phone:')[1].strip()
+            elif "Email:" in p_text:
+                email = p_text.split('Email:')[1].strip()
+            else:
+                description = p_text.strip()
+            
+    return {
+        'category': category,
+        'name': name,
+        'address': address,
+        'phone': phone,
+        'website': website
+    }
+
 def nt():
     print('nt')
     scrape_dir = helpers.get_scrape_dir('nt')
-    remote_url = 'https://nt.gov.au/wellbeing/disability-services/nt-companion-card/where-you-can-use-your-card'
+    remote_url = 'https://ntcompanioncard.org.au/where-you-can-use-your-card'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
     data = []
 
     soup = BeautifulSoup(html, 'html.parser')
 
-    accordions = soup.find_all('div', class_='tmp_accordion')
+    categories = soup.select('.searchandfilter ul li:nth-of-type(2) ul li')
 
-    for accordion in accordions:
-        category = accordion.find('a', class_='btn').get_text()
-        entries = accordion.select('tbody tr')
+    for cat in categories:
+        category = cat.find('label').get_text()
+        id = cat.find('input')['value']
+        if (category == 'All Venues'):
+            continue
+        category = category.split('(')[0]
+        url = 'https://ntcompanioncard.org.au/?sfid=640&sf_action=get_data&sf_data=all&_sft_venue_type='+id+'&lang=en'
 
-        for entry in entries:
 
-            cells = entry.select('td')
+        response = helpers.get_content_from_cache_or_remote(url, scrape_dir)
+        
+        form_results = json.loads(response)
+        results = form_results['results']
 
-            cells_len = len(cells)
+        soup = BeautifulSoup(results, 'html.parser')
+        items = soup.select('.affiliates')
 
-            if (cells_len == 3): # Events and Festivals do not have fixed address
-                entry = {
-                    'category': category,
-                    'name': cells[0].get_text().strip(),
-                    'address': '',
-                    'phone': cells[1].get_text().strip(),
-                    'website': cells[2].find('a')['href'].strip()
-                }
-            else:
-                entry = {
-                    'category': category,
-                    'name': cells[0].get_text().strip(),
-                    'address': cells[1].get_text().strip(),
-                    'phone': cells[2].get_text().strip(),
-                    'website': cells[3].find('a')['href'].strip()
-                }
+        for item in items:
+            entry = nt_extract_item(item, category)
+            data.append(entry)    
 
-            data.append(entry)
+        while True:
+            go_next = ''
+            next_link = soup.select('.pagination .nav-previous a')
+
+            if (next_link == None):
+                break
+
+            if (len(next_link) == 0):
+                break
+            
+            go_next = next_link[0]['href']
+
+            html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+
+            soup = BeautifulSoup(html, 'html.parser')
+
+            items = soup.select('.affiliates')
+
+            for item in items:
+                entry = nt_extract_item(item, category)
+                data.append(entry)
 
     helpers.write_json_file('nt.json', data)
 
