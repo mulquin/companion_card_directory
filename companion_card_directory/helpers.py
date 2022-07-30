@@ -38,7 +38,7 @@ def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
     if (os.path.isfile(local_file) == True):
         file_stat = os.stat(local_file)
         file_age = (time.time() - file_stat.st_mtime)
-        if (file_age > 86400):
+        if (file_age > 86400*3):
             should_dl = True
     else:
         should_dl = True
