@@ -429,35 +429,48 @@ def wa():
         data.append(entry)
     
     helpers.write_json_file('wa.json', data)
-    
+
 def tas():
     print ('tas')
     scrape_dir = helpers.get_scrape_dir('tas')
-    remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/directory/search?queries_region_query_posted=1&queries_region_query[0]=nw&queries_region_query[1]=nor&queries_region_query[2]=south&queries_region_query[3]=sw&queries_region_query[4]=nat'
+    remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/directory'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
     soup = BeautifulSoup(html, 'html.parser')
 
-    li = soup.select('#main-content ul li')
+    ul = soup.select('#main-content ul')[0]
+
+    categories = ul.select('li')
 
     data = []
 
-    for item in li:
-        name = item.get_text()
+    for cat in categories:
+        category = cat.get_text()
+        url = cat.find('a')['href']
+        
+        html = helpers.get_content_from_cache_or_remote(url, scrape_dir)
+        
+        soup = BeautifulSoup(html, 'html.parser')
 
-        website = ''
+        ul = soup.select('#main-content ul')[0]
+        items = ul.select('li')
 
-        link = item.find('a')
-        if (link != None):
-            website = link['href']
+        for item in items:
 
+            name = item.find('strong').get_text()
+            website = ''
 
-        entry = {
-            'name': name,
-            'website': website
-        }
+            link = item.find('a')
+            if (link != None):
+                website = link['href']
 
-        data.append(entry)
+            entry = {
+                'category': category,
+                'name': name,
+                'website': website
+            }
+
+            data.append(entry)
 
     helpers.write_json_file('tas.json', data)
 
