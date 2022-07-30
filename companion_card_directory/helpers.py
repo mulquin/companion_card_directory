@@ -21,17 +21,24 @@ def make_scrape_dir(state):
     if not os.path.exists(scrape_dir):
         os.makedirs(scrape_dir, exist_ok=True)
 
-
 def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
     page_name = remote_path.rsplit('/', 1)[-1]
-    page_name = "".join([c for c in page_name if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+    
+    remote_filename, remote_extension = os.path.splitext(page_name)
+
+    page_name = "".join([c for c in remote_filename if c.isalpha() or c.isdigit() or c==' ']).rstrip()
+
+    if (remote_extension == ''):
+        extension = '.html'
+    else:
+        extension = remote_extension
 
     if (page_name == ''):
-        local_file = local_dir + '_index.html' # Increment if seen before
+        local_file = local_dir + '_index' + extension # Increment if seen before
     elif (is_index == True):
-        local_file = local_dir + '_'+page_name + '.html'
+        local_file = local_dir + '_' + page_name + extension
     else:
-        local_file = local_dir + page_name + '.html' #Add support for files that already end in .html
+        local_file = local_dir + page_name + extension
     
     should_dl = False
 
