@@ -22,8 +22,10 @@ def make_scrape_dir(state):
         os.makedirs(scrape_dir, exist_ok=True)
 
 def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
-    page_name = remote_path.rsplit('/', 1)[-1]
+    remote_path = remote_path.rstrip('/')
     
+    page_name = remote_path.rsplit('/', 1)[-1]
+
     remote_filename, remote_extension = os.path.splitext(page_name)
 
     page_name = "".join([c for c in remote_filename if c.isalpha() or c.isdigit() or c==' ']).rstrip()
@@ -33,12 +35,7 @@ def get_content_from_cache_or_remote(remote_path, local_dir, is_index=False):
     else:
         extension = remote_extension
 
-    if (page_name == ''):
-        local_file = local_dir + '_index' + extension # Increment if seen before
-    elif (is_index == True):
-        local_file = local_dir + '_' + page_name + extension
-    else:
-        local_file = local_dir + page_name + extension
+    local_file = local_dir + page_name + extension
     
     should_dl = False
 
