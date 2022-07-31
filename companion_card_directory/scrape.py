@@ -355,79 +355,59 @@ def qld():
 def wa():
     print ('wa')
     scrape_dir = helpers.get_scrape_dir('wa')
-    remote_url = 'https://www.wacompanioncard.org.au/where-can-i-use-my-card'
+    remote_url = 'https://www.wacompanioncard.org.au/affiliates_dir_ltg-sitemap.xml'
 
-    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+    xml = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+
+    soup = BeautifulSoup(xml, 'lxml-xml')
+
+    locs = soup.find_all('loc')
 
     data = []
 
-    affiliate_links = []
+    for loc in locs:
+        if (loc.prefix == 'image'):
+            continue
 
-    soup = BeautifulSoup(html, 'html.parser')
+        url = loc.get_text()
 
-    link_list = soup.select('#itemListLinks a')
-
-    for link in link_list:
-        built_link = 'https://www.wacompanioncard.org.au' + link['href']
-        affiliate_links.append(built_link)
-
-    while True:
-        go_next = ''
-        next_link = soup.select('li a.next')
-
-        if (next_link == None):
-            break
-
-        if (len(next_link) == 0):
-            break
-        
-        go_next = 'https://www.wacompanioncard.org.au' + next_link[0]['href']
-
-        html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+        html = helpers.get_content_from_cache_or_remote(url, scrape_dir, True)
 
         soup = BeautifulSoup(html, 'html.parser')
 
-        link_list = soup.select('#itemListLinks a')
+        name = soup.find('h1').get_text()
 
-        for link in link_list:
-            built_link = 'https://www.wacompanioncard.org.au' + link['href']
-            affiliate_links.append(built_link)
+        cats = soup.select('div[data-name="entity_field_directory_category"] a')
+        cat_names = []
+        for cat in cats:
+            cat_names.append(cat.get_text())
 
-    for link in affiliate_links:
-        html = helpers.get_content_from_cache_or_remote(link, scrape_dir)
-        soup = BeautifulSoup(html, 'html.parser')
+        category = ", ".join(cat_names)
 
-        name = soup.select('h2.itemTitle')[0].get_text().strip()
- 
-        fields = soup.select('div.itemExtraFields li')
+        description = ''
+        soup_desc = soup.select('div[data-name="entity_field_post_content"]')
+        if (len(soup_desc) > 0):
+            description = soup_desc[0].get_text().strip()
 
-        for field in fields:
-            field_name = field.find_all('span')[0].get_text().strip()
+        address = ''
+        soup_addr = soup.select('div[data-name="entity_field_location_address"] span')
+        if (len(soup_addr) > 0):
+            address = soup_addr[0].get_text().strip().replace(' , ', ', ')
 
-            if (field_name == 'Type/Category:'):
-                category = field.find_all('span')[1].get_text()
-            elif (field_name == 'Street Address:'):
-                street = field.find_all('span')[1].get_text()
-            elif (field_name == 'Suburb:'):
-                suburb = field.find_all('span')[1].get_text()
-            elif (field_name == 'State:'):
-                state = field.find_all('span')[1].get_text()
-            elif (field_name == 'Postcode:'):
-                postcode = field.find_all('span')[1].get_text()
-            elif (field_name == 'Phone Number:'):
-                phone = field.find_all('span')[1].get_text()
-                if (phone == '.'):
-                    phone = ''
-            elif (field_name == 'Website:'):
-                website = ''
-                if (field.find('a') != None):
-                    website = field.find('a')['href']
-            else:
-                print('wtf field: ' + field_name)
+        phone = ''
+        soup_phone = soup.select('div[data-name="entity_field_field_phone"] a')
+        if (len(soup_phone) > 0):
+            phone = soup_phone[0].get_text()
 
-        address = street + ", " + suburb + ", " + state + ", " + postcode
+        email = ''
+        soup_email = soup.select('div[data-name="entity_field_field_email"] a')
+        if (len(soup_email) > 0):
+            email = soup_email[0].get_text()
 
-        description = soup.select('div.itemFullText')[0].get_text().strip()
+        website = ''
+        soup_web = soup.select('div[data-name="entity_field_field_website"] a')
+        if (len(soup_web) > 0):
+            website = soup_web[0].get_text()
 
         entry = {
             'category': category,
@@ -439,9 +419,9 @@ def wa():
         }
 
         data.append(entry)
-    
-    helpers.write_json_file('wa.json', data)
-
+        
+    helpers.write_json_file('wa.json', data)  
+       
 def tas():
     print ('tas')
     scrape_dir = helpers.get_scrape_dir('tas')
