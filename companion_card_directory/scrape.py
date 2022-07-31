@@ -2,6 +2,10 @@ import helpers
 from bs4 import BeautifulSoup
 import pdfplumber
 import json
+import requests
+import os
+import time
+import re
 
 def act_get_next_sibling_text(soup, paragraphs, strong_text):
     for paragraph in paragraphs:
@@ -174,84 +178,92 @@ def nt():
 
     helpers.write_json_file('nt.json', data)
 
+def nsw_get_listings_from_cache_or_remote():
+    scrape_dir = helpers.get_scrape_dir('nsw')
+    local_file = scrape_dir + 'data.json'
+
+    should_dl = False
+
+    if (os.path.isfile(local_file) == True):
+        file_stat = os.stat(local_file)
+        file_age = (time.time() - file_stat.st_mtime)
+        if (file_age > 86400*3):
+            should_dl = True
+    else:
+        should_dl = True
+
+    if (should_dl == True):
+        print('Downloading: https://www.nsw.gov.au/living-in-nsw/companion-card/use-card')
+
+        data = {"query":{"function_score":{"query":{"bool":{"must":[{"match":{"type":"poi"}},{"match":{"subtype":"affiliatedbusiness"}},{"bool":{"should":[]}},{"bool":{"should":[]}}]}},"random_score":{}}}}
+
+        response = requests.post(
+            url='https://www.nsw.gov.au/api/v1/elasticsearch/prod_content/_search?size=9000',
+            headers={
+                'Content-Type': 'application/json',
+                'Referer': 'https://www.nsw.gov.au/living-in-nsw/companion-card/use-card'
+            },
+            data=json.dumps(data)
+        )
+
+        with open(local_file, 'w') as file:
+            file.write(response.text)
+
+        return json.loads(response.text)
+
+    else:
+        print('Cached: ' + local_file)
+        return json.loads(open(local_file, 'r').read())
+
+# from https://stackoverflow.com/a/67579534/1427345
+def nsw_extract_dl(soup):
+    keys, values = [], []
+    for dt in soup.findAll("dt"):
+        keys.append(dt.text.strip())
+    for dd in soup.findAll("dd"):
+        values.append(dd.text.strip())
+    return dict(zip(keys, values))
+
 def nsw():
     print('nsw')
     scrape_dir = helpers.get_scrape_dir('nsw')
-    remote_url = 'https://www.companioncard.nsw.gov.au/cardholders/where-can-i-use-my-card'
 
-    html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
+    json_data = nsw_get_listings_from_cache_or_remote() 
 
     data = []
 
-    affiliate_links = []
+    for item in json_data['hits']['hits']:
+        source = item['_source']
 
-    soup = BeautifulSoup(html, 'html.parser')
+        listing_url = 'https://www.nsw.gov.au' + source['url'][0]
 
-    link_list = soup.select('ul#ul-646007 span.bold a')
-
-    for link in link_list:
-        affiliate_links.append(link['href'])
-
-    while True:
-        go_next = ''
-        next_link = soup.select('div.inline-block.width-20.mobile-width-50.no-mobile.align-right a')
-
-        if (next_link == None):
-            break
-
-        if (len(next_link) == 0):
-            break
-        
-        go_next = next_link[0]['href']
-
-        html = helpers.get_content_from_cache_or_remote(go_next, scrape_dir, True)
+        html = helpers.get_content_from_cache_or_remote(listing_url, scrape_dir)
 
         soup = BeautifulSoup(html, 'html.parser')
 
-        link_list = soup.select('ul#ul-646007 span.bold a')
+        div = soup.select('.node-section-content div')[0]
+        dl = div.find('dl')
 
-        for link in link_list:
-            affiliate_links.append(link['href'])
+        content = nsw_extract_dl(dl)
 
-    for link in affiliate_links:
-        html = helpers.get_content_from_cache_or_remote(link, scrape_dir)
-        soup = BeautifulSoup(html, 'html.parser')
+        address = re.sub('\s+',' ',content['Address'].replace(" \n", ","))
 
-        paragraphs = soup.select('#readable-content p')
-        
-        name = soup.find('h1').get_text();
-        category = ''
-        address = ''
         phone = ''
-        website = ''
-        description = ''
+        if 'Phone' in content:
+            phone = content['Phone']
 
-        description = paragraphs[0].get_text()
-        for paragraph in paragraphs:
-            strong = paragraph.find('strong')
-            if (hasattr(strong, 'get_text')):
-                field = strong.get_text()
-                if (field == "Business type"):
-                    category = strong.next_sibling.next_sibling
-                    if (category == None):
-                        category = soup.select('div.breadcrumbs li:last-of-type a')[0].get_text()
-                        print("\tUsing breadcrumb for category")
-                elif (field == "Phone number"):
-                    phone = strong.next_sibling.next_sibling
-                elif (field == "Address"):
-                    address = strong.next_sibling.next_sibling.get_text().strip()
-                elif (field == "Website"):
-                    website = strong.next_sibling.next_sibling['href']
-                else:
-                    print ('Unknown field: "' + field + '"')
-       
+        website = ''
+        if 'Website' in content:
+            website = content['Website']
+
         entry = {
-            'category': category,
-            'name': name,
+            'category': source['name_industry'][0],
+            'name': source['title'][0],
             'address': address,
             'phone': phone,
             'website': website,
-            'description': description
+            'description': source['summary'][0],
+            'state_region': source['name_region'][0]
         }
 
         data.append(entry)
