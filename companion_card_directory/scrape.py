@@ -472,7 +472,7 @@ def vic():
     remote_url = 'https://www.companioncard.vic.gov.au/sites/default/files/documents/202101/Companion%20Card%20Affiliates%20List_postcode.pdf'
     file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
-    pdf = pdfplumber.open(file)
+    pdf = pdfplumber.open(file, password="")
     data = []
 
     for page in pdf.pages:
