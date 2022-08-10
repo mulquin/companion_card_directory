@@ -534,6 +534,7 @@ def sa():
     pdf_url = link[0].get('href')
     
     file = helpers.get_content_from_cache_or_remote(pdf_url, scrape_dir)
+    file = helpers.get_content_from_cache_or_remote(pdf_url, scrape_dir) # FIXME: I don't know why but getting from cache works but remote doesnt
 
     pdf = pdfplumber.open(file, password="")
 
