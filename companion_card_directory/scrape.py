@@ -36,8 +36,9 @@ def act_get_next_sibling_href(soup, paragraphs, strong_text):
     return ''
 
 def act():
-    print('act')
-    scrape_dir = helpers.get_scrape_dir('act')
+    state = 'act'
+    print(state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_index = 'https://www.communityservices.act.gov.au/companion_card/affiliates/'
 
     index_html = helpers.get_content_from_cache_or_remote(remote_index, scrape_dir)
@@ -86,7 +87,8 @@ def act():
 
         data.append(entry)
 
-    helpers.write_json_file('act.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
 
 def nt_extract_item(item, category):
     name = item.find('h2').get_text()
@@ -122,8 +124,9 @@ def nt_extract_item(item, category):
     }
 
 def nt():
-    print('nt')
-    scrape_dir = helpers.get_scrape_dir('nt')
+    state = 'nt'
+    print(state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://ntcompanioncard.org.au/where-you-can-use-your-card'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
@@ -176,7 +179,8 @@ def nt():
                 entry = nt_extract_item(item, category)
                 data.append(entry)
 
-    helpers.write_json_file('nt.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
 
 def nsw_get_listings_from_cache_or_remote():
     scrape_dir = helpers.get_scrape_dir('nsw')
@@ -225,8 +229,9 @@ def nsw_extract_dl(soup):
     return dict(zip(keys, values))
 
 def nsw():
-    print('nsw')
-    scrape_dir = helpers.get_scrape_dir('nsw')
+    state = 'nsw'
+    print(state)
+    scrape_dir = helpers.get_scrape_dir(state)
 
     json_data = nsw_get_listings_from_cache_or_remote() 
 
@@ -268,11 +273,13 @@ def nsw():
 
         data.append(entry)
 
-    helpers.write_json_file('nsw.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
     
 def qld():
-    print('qld')
-    scrape_dir = helpers.get_scrape_dir('qld')
+    state = 'qld'
+    print(state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://secure.communities.qld.gov.au/chiip/SearchBrowseCompanion.aspx'
 
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
@@ -350,11 +357,13 @@ def qld():
                 
                 data.append(entry)
                 
-    helpers.write_json_file('qld.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
 
 def wa():
-    print ('wa')
-    scrape_dir = helpers.get_scrape_dir('wa')
+    state = 'wa'
+    print (state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://www.wacompanioncard.org.au/affiliates_dir_ltg-sitemap.xml'
 
     xml = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir, True)
@@ -419,11 +428,14 @@ def wa():
         }
 
         data.append(entry)
-        
-       
+
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
+         
 def tas():
-    print ('tas')
-    scrape_dir = helpers.get_scrape_dir('tas')
+    state = 'tas'
+    print (state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://www.companioncard.communities.tas.gov.au/affiliates/directory'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
@@ -463,11 +475,13 @@ def tas():
 
             data.append(entry)
 
-    helpers.write_json_file('tas.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
 
 def vic():
-    print ('vic')
-    scrape_dir = helpers.get_scrape_dir('vic')
+    state = 'vic'
+    print (state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://www.companioncard.vic.gov.au/sites/default/files/documents/202101/Companion%20Card%20Affiliates%20List_postcode.pdf'
     file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
@@ -503,11 +517,13 @@ def vic():
             }
             data.append(entry)
     
-    helpers.write_json_file('vic.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
 
 def sa():
-    print ('sa')
-    scrape_dir = helpers.get_scrape_dir('sa')
+    state = 'sa'
+    print (state)
+    scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://www.sa.gov.au/topics/care-and-support/disability/companion-card/using-your-companion-card'
     html = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
 
@@ -554,4 +570,5 @@ def sa():
 
             data.append(entry)
 
-    helpers.write_json_file('sa.json', data)
+    helpers.write_json_file(state+'.json', data)
+    helpers.update_log_file(state, len(data), time.perf_counter())
