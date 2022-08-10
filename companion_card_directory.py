@@ -22,7 +22,7 @@ for state in states:
             'name': '',
             'phone': '',
             'website': '',
-            'state_region': '',
+            'region': '',
             'email': '',
             'facebook': '',
             'instagram': '',
@@ -43,9 +43,6 @@ for state in states:
 
         if 'website' in record.keys():
             entry["website"] = record['website']
-        
-        if 'state_region' in record.keys():
-            entry["state_region"] = record['state_region']
 
         if 'email' in record.keys():
             entry["email"] = record['email']
