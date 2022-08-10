@@ -484,6 +484,7 @@ def vic():
     scrape_dir = helpers.get_scrape_dir(state)
     remote_url = 'https://www.companioncard.vic.gov.au/sites/default/files/documents/202101/Companion%20Card%20Affiliates%20List_postcode.pdf'
     file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir)
+    file = helpers.get_content_from_cache_or_remote(remote_url, scrape_dir) # Issue with caching
 
     pdf = pdfplumber.open(file, password="")
     data = []
