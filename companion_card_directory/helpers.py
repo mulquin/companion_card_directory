@@ -3,6 +3,7 @@ import time
 import requests
 import json
 import magic
+import csv
 
 def update_log_file(state, entries, perf_time):
     with open('log.txt', 'a') as log:
@@ -20,6 +21,13 @@ def get_postcode_json(state):
     file = open(filename)
     data = json.load(file)
     return data
+
+def write_csv_file(filename, data):
+    csv_file = get_data_dir() + filename
+    with open(csv_file, 'w', encoding='UTF8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=data[0].keys())
+        writer.writeheader()
+        writer.writerows(data)
 
 def write_json_file(filename, data):
     json_file = get_data_dir() + filename

@@ -2,6 +2,7 @@ import companion_card_directory as ccd
 import time
 import re
 import json
+import csv
 
 states = ['nt', 'act', 'nsw', 'qld', 'wa', 'sa', 'tas', 'vic']
 
@@ -45,8 +46,6 @@ for state in states:
                 if postcode in postcodes:
                     region = postcodes[postcode]['region']
                     entry['region'] = region
-                #print(record['name'] + " " + numbers.group(0))
-
         
         if 'category' in record.keys():
             entry["category"] = record['category']
@@ -75,3 +74,4 @@ for state in states:
         entries.append(entry)
 
 ccd.helpers.write_json_file('all.json', entries)
+ccd.helpers.write_csv_file('all.csv', entries)
