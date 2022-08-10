@@ -1,5 +1,7 @@
 import companion_card_directory as ccd
 import time
+import re
+import json
 
 states = ['nt', 'act', 'nsw', 'qld', 'wa', 'sa', 'tas', 'vic']
 
@@ -12,6 +14,10 @@ for state in states:
     scrape = getattr(ccd.scrape, state)
     scrape()
 
+# FIXME: Do this without double loop
+for state in states:
+
+    postcodes = ccd.helpers.get_postcode_json(state) 
     data = ccd.helpers.get_state_json(state)
 
     for record in data:
@@ -31,6 +37,16 @@ for state in states:
 
         if 'address' in record.keys():
             entry["address"] = record['address']
+
+            numbers = re.findall('\d{4}$', record['address'])
+
+            if len(numbers) > 0:
+                postcode = numbers[0]
+                if postcode in postcodes:
+                    region = postcodes[postcode]['region']
+                    entry['region'] = region
+                #print(record['name'] + " " + numbers.group(0))
+
         
         if 'category' in record.keys():
             entry["category"] = record['category']

@@ -15,9 +15,16 @@ def get_state_json(state):
     data = json.load(file)
     return data
 
+def get_postcode_json(state):
+    filename = get_data_dir() + 'postcodes' + os.path.sep + state + '.json'
+    file = open(filename)
+    data = json.load(file)
+    return data
+
 def write_json_file(filename, data):
     json_file = get_data_dir() + filename
     json_data = json.dumps(data, indent=4, sort_keys=True)
+    #json_data = json.dumps(data, sort_keys=True)
     file = open(json_file, 'w').write(json_data)
 
 def get_data_dir():
