@@ -420,7 +420,6 @@ def wa():
 
         data.append(entry)
         
-    helpers.write_json_file('wa.json', data)  
        
 def tas():
     print ('tas')
@@ -520,7 +519,7 @@ def sa():
     
     file = helpers.get_content_from_cache_or_remote(pdf_url, scrape_dir)
 
-    pdf = pdfplumber.open(file)
+    pdf = pdfplumber.open(file, password="")
 
     data = []
 
