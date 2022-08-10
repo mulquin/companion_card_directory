@@ -8,6 +8,13 @@ def update_log_file(state, entries, perf_time):
     with open('log.txt', 'a') as log:
         log.write(state + ' ' + str(entries) + ' ' + str(perf_time) + "\n")
     
+
+def get_state_json(state):
+    filename = get_data_dir() + state + '.json'
+    file = open(filename)
+    data = json.load(file)
+    return data
+
 def write_json_file(filename, data):
     json_file = get_data_dir() + filename
     json_data = json.dumps(data, indent=4, sort_keys=True)
